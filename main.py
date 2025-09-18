@@ -1,33 +1,53 @@
-from envelope import Envelope
-from strategy import BaseStrategy, Automatic_BaseStrategy, N_max_strategy, More_then_N_percent_group_strategy
+# main.py
+from strategy import RandomStrategy, StopAfterNOpensStrategy, BetterThanPercentStrategy, MaxAfterNStrategy
+from tournament import (
+    DeathMatchTournament,
+    RoundRobinTournament,
+    EliminationTournament,
+    LeagueTournament,
+    ChampionshipTournament
+)
 
-def cls(): print ("\n" * 20)
 
-envelopes = []
-for i in range(100):
-    envelopes.append(Envelope())
-strategies = []
-strategies.append(BaseStrategy(envelopes))                              # user select manually envelopes
-strategies.append(Automatic_BaseStrategy(envelopes))                    # random selection of envelop
-strategies.append(N_max_strategy(envelopes))                            # return envelope after N max values (defualt N=3)
-strategies.append(More_then_N_percent_group_strategy(envelopes, 0.25))  # return envelope with more money that in the highest of N% group
+def main():
+    # נגדיר את כל האסטרטגיות לשימוש בטורנירים
+    strategies = [
+        RandomStrategy(),
+        StopAfterNOpensStrategy(),
+        BetterThanPercentStrategy(),
+        MaxAfterNStrategy()
+    ]
 
-n=-1
-while n!=4:
-    cls()
-    for i in range(len(strategies)):
-        print(i, strategies[i].display())
-    n = input(f'enter your choice [0-{len(strategies)}] (len(strategies) to end):')
-    if n.isdigit():
-        n=int(n)
-        if n==2:
-            N = input(f'enter N max values: ')
-            strategies[n].N=int(N)
-        elif n==3:
-            p = input(f'enter 0-1 number for group size (defualt=0.25)')
-            strategies[n].percent=p
-        if n!=4:    
-            strategies[n].play()
-        x=input('press any key to continue')
-    else:
-        pass
+    print("\n===================")
+    print(" DeathMatch")
+    print("===================")
+    deathmatch = DeathMatchTournament([strategies[0], strategies[1]], win_goal=3)
+    winner, log = deathmatch.run()
+
+    print("\n===================")
+    print(" Round Robin")
+    print("===================")
+    rr = RoundRobinTournament(strategies, rounds=2)
+    table, log = rr.run()
+
+    print("\n===================")
+    print(" Elimination")
+    print("===================")
+    elim = EliminationTournament(strategies)
+    winner, log = elim.run()
+
+    print("\n===================")
+    print(" League")
+    print("===================")
+    league = LeagueTournament(strategies)
+    table, log = league.run()
+
+    print("\n===================")
+    print(" Championship")
+    print("===================")
+    champ = ChampionshipTournament(strategies, group_size=2)
+    results, log = champ.run()
+
+
+if __name__ == "__main__":
+    main()
